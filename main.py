@@ -31,6 +31,9 @@ from game_utils import LaunchResult, launch_game
 from window_screenshot import find_window_by_title, get_window_rect, parse_hwnd
 
 
+DEFAULT_MODEL_PATH = Path(__file__).resolve().parent / "runs" / "detect" / "maplestory_detect" / "weights" / "best.pt"
+
+
 class MapleStoryToolWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
@@ -120,12 +123,18 @@ class MapleStoryToolWindow(QMainWindow):
         detection_layout = QGridLayout(detection_group)
         detection_layout.setColumnStretch(1, 1)
 
+        self.model_path_input = QLineEdit(str(DEFAULT_MODEL_PATH))
+        model_path_button = QPushButton("选择模型文件")
+        model_path_button.clicked.connect(self.choose_model_path)
         self.detect_interval_input = QLineEdit("1")
         self.detect_conf_input = QLineEdit("0.25")
-        detection_layout.addWidget(QLabel("检测间隔秒"), 0, 0)
-        detection_layout.addWidget(self.detect_interval_input, 0, 1)
-        detection_layout.addWidget(QLabel("置信度"), 1, 0)
-        detection_layout.addWidget(self.detect_conf_input, 1, 1)
+        detection_layout.addWidget(QLabel("模型文件"), 0, 0)
+        detection_layout.addWidget(self.model_path_input, 0, 1)
+        detection_layout.addWidget(model_path_button, 0, 2)
+        detection_layout.addWidget(QLabel("检测间隔秒"), 1, 0)
+        detection_layout.addWidget(self.detect_interval_input, 1, 1)
+        detection_layout.addWidget(QLabel("置信度"), 2, 0)
+        detection_layout.addWidget(self.detect_conf_input, 2, 1)
 
         detection_button_layout = QHBoxLayout()
         detection_button_layout.addStretch(1)
@@ -136,7 +145,7 @@ class MapleStoryToolWindow(QMainWindow):
         self.stop_detection_button.clicked.connect(self.stop_detection_script)
         detection_button_layout.addWidget(self.run_detection_button)
         detection_button_layout.addWidget(self.stop_detection_button)
-        detection_layout.addLayout(detection_button_layout, 2, 1)
+        detection_layout.addLayout(detection_button_layout, 3, 1, 1, 2)
 
         main_layout.addWidget(detection_group)
 
@@ -192,6 +201,16 @@ class MapleStoryToolWindow(QMainWindow):
         directory = QFileDialog.getExistingDirectory(self, "选择工作目录")
         if directory:
             self.working_dir_input.setText(directory)
+
+    def choose_model_path(self) -> None:
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "选择 YOLO 模型文件",
+            str(DEFAULT_MODEL_PATH.parent),
+            "模型文件 (*.pt *.onnx *.engine);;所有文件 (*.*)",
+        )
+        if file_path:
+            self.model_path_input.setText(file_path)
 
     def launch_selected_game(self) -> None:
         game_path = self.game_path_input.text().strip().strip('"')
@@ -253,11 +272,18 @@ class MapleStoryToolWindow(QMainWindow):
 
         interval = self.detect_interval_input.text().strip() or "1"
         conf = self.detect_conf_input.text().strip() or "0.25"
+        model_path = self.model_path_input.text().strip().strip('"') or str(DEFAULT_MODEL_PATH)
+        if not Path(model_path).exists():
+            QMessageBox.warning(self, "模型文件不存在", f"请选择有效模型文件：\n{model_path}")
+            return
+
         script_path = Path(__file__).resolve().parent / "realtime_detect.py"
         arguments = [
             str(script_path),
             "--hwnd",
             str(self.current_hwnd),
+            "--model",
+            model_path,
             "--interval",
             interval,
             "--conf",

@@ -19,7 +19,7 @@ from window_screenshot import (
 )
 
 
-DEFAULT_MODEL = Path("runs/detect/runs/maplestory_detect/weights/best.pt")
+DEFAULT_MODEL = Path("runs/detect/maplestory_detect/weights/best.pt")
 DEFAULT_PLAYER_Y_RATIO = 0.65
 
 

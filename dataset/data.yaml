@@ -1,5 +1,8 @@
-path: D:/MapleStory/dataset
+path: C:/Users/Administrator/MapleStory/dataset
 train: images/train
-val: images/train
+val: images/val
 names:
-  0: mogu
+  0: 角色
+  1: 蜗牛
+  2: 小蘑菇
+  3: 大蘑菇
