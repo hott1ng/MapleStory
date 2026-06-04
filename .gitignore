@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Build outputs
+build/
+dist/
+*.spec.bak
+
+# Logs and caches
+*.log
+*.cache
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# YOLO / training outputs
+runs/
+weights/
+*.pt
+*.onnx
+*.engine
+
+# Local screenshots and generated datasets
+screenshots/
+dist/screenshots/
+verify_screenshots/
+dataset/images/
+dataset/labels/
+dataset_raw/
+window_*.txt
+
+# Exported labels and archives
+*.zip
+*.rar
+*.7z
+
+# Local editor files
+.vscode/
+.idea/
+
+# OS files
+Thumbs.db
+.DS_Store

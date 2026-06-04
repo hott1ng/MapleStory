@@ -1,0 +1,143 @@
+1. 标注网站
+
+https://www.makesense.ai/
+
+用途：给截图中的目标画框，导出 YOLO 格式标签。
+
+
+2. 截图
+
+双击运行：
+
+D:\MapleStory\dist\window_screenshot.exe
+
+输入窗口标题，例如：
+
+微信
+
+截图默认保存到：
+
+D:\MapleStory\dist\screenshots
+
+
+3. 标注
+
+在 makesense.ai 中选择 Object Detection。
+
+上传截图，给目标画矩形框。
+
+导出 YOLO 格式标签 zip。
+
+
+4. 整理数据集
+
+原始图片放到：
+
+D:\MapleStory\dataset_raw\images
+
+YOLO 标签放到：
+
+D:\MapleStory\dataset_raw\labels
+
+图片和标签必须同名，例如：
+
+window_20260604_145031_281.png
+window_20260604_145031_281.txt
+
+最终训练目录：
+
+D:\MapleStory\dataset
+  images\train
+  labels\train
+  data.yaml
+
+
+5. YOLO 训练命令
+
+在 D:\MapleStory 目录下运行：
+
+.\.venv\Scripts\yolo.exe detect train data=dataset\data.yaml model=yolo11n.pt epochs=50 imgsz=640 batch=4 device=cpu project=runs name=maplestory_detect
+
+
+6. 训练结果
+
+训练输出目录：
+
+D:\MapleStory\runs\detect\runs\maplestory_detect
+
+最佳模型文件：
+
+D:\MapleStory\runs\detect\runs\maplestory_detect\weights\best.pt
+
+最后一次模型文件：
+
+D:\MapleStory\runs\detect\runs\maplestory_detect\weights\last.pt
+
+
+7. 注意事项
+
+当前只有 5 张图片，模型容易过拟合。
+
+后续建议继续截图和标注，至少先做到 50-100 张，再重新训练。
+
+
+8. 使用模型识别截图
+
+使用训练好的 best.pt 对 screenshots 目录进行识别：
+
+.\.venv\Scripts\yolo.exe detect predict model=runs\detect\runs\maplestory_detect\weights\best.pt source=.\screenshots conf=0.25 imgsz=640 device=cpu save=True project=runs name=maplestory_predict
+
+识别结果输出目录：
+
+D:\MapleStory\runs\detect\runs\maplestory_predict
+
+如果要识别单张图片：
+
+.\.venv\Scripts\yolo.exe detect predict model=runs\detect\runs\maplestory_detect\weights\best.pt source=dist\screenshots\你的图片名.png conf=0.25 imgsz=640 device=cpu save=True project=runs name=single_predict
+
+如果识别框太少，可以降低 conf，例如：
+
+conf=0.1
+
+如果误识别太多，可以提高 conf，例如：
+
+conf=0.5
+
+
+9. 实时识别怪物位置方案
+
+详细方案文件：
+
+D:\MapleStory\realtime_monster_detection_plan.txt
+
+
+10. 实时识别透明蒙版脚本
+
+脚本文件：
+
+D:\MapleStory\realtime_detect_overlay.py
+
+双击/无参数运行后输入窗口标题，例如：
+
+微信
+
+命令行运行示例：
+
+.\.venv\Scripts\python.exe .\realtime_detect_overlay.py --title "微信"
+
+可配置识别间隔：
+
+.\.venv\Scripts\python.exe .\realtime_detect_overlay.py --title "微信" --interval 0.5
+
+可配置置信度：
+
+.\.venv\Scripts\python.exe .\realtime_detect_overlay.py --title "微信" --conf 0.2
+
+脚本功能：
+
+1. 监控目标窗口
+2. 每秒截图到内存
+3. 使用 YOLO best.pt 识别 mogu
+4. 使用透明鼠标穿透蒙版显示标框、类别、置信度、中心点
+5. 控制台打印 mogu 中心坐标
+6. 不保存截图和识别结果
